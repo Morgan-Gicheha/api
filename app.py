@@ -4,6 +4,7 @@ import uuid
 from werkzeug.security import generate_password_hash,check_password_hash
 import jwt
 import datetime
+from functools import wraps
 
 app=Flask(__name__)
 
@@ -34,9 +35,41 @@ class Todo(db.Model):
 
 User.create()
 
+# creating the decoratore so that every route should take in require token
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token= None
+
+        # checking if the ytoken already exists in the header
+        if 'x-access-token' in request.headers:
+            token = request.headers['x-access-token']
+        if not token:
+            return jsonify({"message":"token is missing"})
+
+        try:
+            # DECODIN THE TOKEN
+            data=jwt.decode(token,app.config['SECRET_KEY'])
+            # retrieving the public_id encoded in the token and matching it to the specific user
+            user_for_public_id = User.query.filter_by(public_id=data['public_id']).first()
+
+        except:
+            return jsonify({"message":" token is invalid"}),401
+  
+        return f(user_for_public_id,*args, **kwargs)
+    return decorated
+
+
+        
+
 # creating user route
 @app.route('/user',methods=['POST'])
-def create_user():
+@token_required
+def create_user(user_for_public_id):
+
+    # making sure that only admins na query data from yhe database
+    if not user_for_public_id.admin:
+        return jsonify({"message":"cannot perfon above function! u are not admin"})
 
     data= request.get_json()
 
@@ -51,7 +84,14 @@ def create_user():
 
 # fetching all user route
 @app.route('/user',methods=['GET'])
-def get_all_users():
+@token_required
+def get_all_users(user_for_public_id):
+
+        # making sure that only admins na query data from yhe database
+    if not user_for_public_id.admin:
+        return jsonify({"message":"cannot perfon above function! u are not admin"})
+
+
     # querying for all users
     users=User.query.all()
     output=[]
@@ -68,7 +108,13 @@ def get_all_users():
     return jsonify({"user":output})
 
 @app.route('/user/<public_id>',methods=['GET'])
-def get_one_user(public_id):
+@token_required
+def get_one_user(user_for_public_id,public_id):
+
+        # making sure that only admins na query data from yhe database
+    if not user_for_public_id.admin:
+        return jsonify({"message":"cannot perfon above function! u are not admin"})
+
 
     single_user=User.query.filter_by(public_id=public_id).first()
     if not single_user:
@@ -83,7 +129,13 @@ def get_one_user(public_id):
     return jsonify({"message": user_data})
 
 @app.route('/user/<public_id>',methods=['PUT'])
-def promote_user(public_id):
+@token_required
+def promote_user(user_for_public_id,public_id):
+
+        # making sure that only admins na query data from yhe database
+    if not user_for_public_id.admin:
+        return jsonify({"message":"cannot perfon above function! u are not admin"})
+
 
     single_user=User.query.filter_by(public_id=public_id).first()
     if not single_user:
@@ -94,7 +146,13 @@ def promote_user(public_id):
     return jsonify({"message" : "User has been promoted!"})
 
 @app.route('/user/<public_id>',methods=['DELETE'])
-def delete_user(public_id):
+@token_required
+def delete_user(user_for_public_id,public_id):
+
+        # making sure that only admins na query data from yhe database
+    if not user_for_public_id.admin:
+        return jsonify({"message":"cannot perfon above function! u are not admin"})
+
         
     single_user=User.query.filter_by(public_id=public_id).first()
     if not single_user:
@@ -111,12 +169,12 @@ def login():
 
     auth=request.authorization 
     if not auth or not auth.username or not auth.password:
-        return make_response ('could not verify!',401, {'WWW-Authenticate':'Basic realm="Login required!'})
+        return make_response ('could not verify! nothing provided',401, {'WWW-Authenticate':'Basic realm="Login required!'})
 
     user = User.query.filter_by(name=auth.username).first()
 
     if not user:
-        return make_response ('could not verify!',401, {'WWW-Authenticate':'Basic realm="Login required!'})
+        return make_response ('could not verify! username',401, {'WWW-Authenticate':'Basic realm="Login required!'})
 
     # to compare hasshed password yo use check_password_harsh
     # comparing text password to inputed password. if it is correct, we now generate the token
@@ -128,7 +186,7 @@ def login():
         return jsonify({"token" : token.decode('UTF-8')})
 
     # if the password is wrong it returns the error message below
-    return make_response ('could not verify!',401, {'WWW-Authenticate':'Basic realm="Login required!'})
+    return make_response ('could not verify! password ',401, {'WWW-Authenticate':'Basic realm="Login required!'})
 
 
 
