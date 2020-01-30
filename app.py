@@ -31,7 +31,7 @@ class Todo(db.Model):
     id= db.Column(db.Integer,primary_key=True)
     text= db.Column(db.String(200))
     complete=db.Column(db.Boolean)
-    public_id= db.Column(db.Integer)
+    user_id= db.Column(db.Integer)
 
 User.create()
 
@@ -67,11 +67,9 @@ def token_required(f):
 @token_required
 def create_user(user_for_public_id):
 
-    # making sure that only admins na query data from yhe database
-    if not user_for_public_id.admin:
-        return jsonify({"message":"cannot perfon above function! u are not admin"})
 
     data= request.get_json()
+    print(data)
 
     hashed_password = generate_password_hash(data['password'],method='sha256')
 
@@ -88,7 +86,7 @@ def create_user(user_for_public_id):
 def get_all_users(user_for_public_id):
 
         # making sure that only admins na query data from yhe database
-    if not user_for_public_id.admin:
+    if  user_for_public_id.admin==False:
         return jsonify({"message":"cannot perfon above function! u are not admin"})
 
 
@@ -187,6 +185,48 @@ def login():
 
     # if the password is wrong it returns the error message below
     return make_response ('could not verify! password ',401, {'WWW-Authenticate':'Basic realm="Login required!'})
+
+
+
+# TODO routes
+
+@app.route('/todo', methods=['GET'])
+@token_required
+def get_all_todo(user_for_public_id):
+    """fetchng all todos"""
+
+    return ""
+@app.route('/todo/<todo_id>',methods=['GET'])
+@token_required
+def get_one_todo(user_for_public_id,todo_id):
+    """getting one todo"""
+
+    return ""
+
+
+@app.route('/create_todo',methods=['POST'])
+@token_required
+def create_todo(user_for_public_id):
+    """CREATING A NEW TODO"""
+
+    x= request.get_json()
+    print(type(x))
+    return jsonify({"message":"working so far"})
+
+
+@app.route('/todo/<todo_id>',methods=['PUT'])
+@token_required
+def complete(user_for_public_id,todo_id):
+
+    return ""
+
+@app.route('/todo/<todo_id>',methods=['DELETE'])
+@token_required
+def delete_todo(user_for_public_id,todo_id):
+
+    return ""
+
+
 
 
 
