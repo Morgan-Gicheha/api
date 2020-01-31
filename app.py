@@ -216,6 +216,8 @@ def get_all_todo(user_for_public_id):
 def get_one_todo(user_for_public_id,todo_id):
     """getting one todo"""
     one_todo= Todo.query.filter_by(id=todo_id).first()
+    if not one_todo:
+        return jsonify({"message":"no todo found"})
 
     one_todo_dict = {}
     one_todo_dict["is complete"] = one_todo.complete
@@ -243,13 +245,28 @@ def create_todo(user_for_public_id):
 @token_required
 def complete(user_for_public_id,todo_id):
 
-    return ""
+    single_todo_complete=Todo.query.filter_by(id=todo_id).first()
+    if not single_todo_complete:
+        return jsonify({"message":"no todo found"})
+
+    single_todo_complete.complete=True
+    db.session.commit()
+    
+
+    return jsonify({"message":"todo complete!"})
 
 @app.route('/todo/<todo_id>',methods=['DELETE'])
 @token_required
 def delete_todo(user_for_public_id,todo_id):
 
-    return ""
+    todo_tobe_deleted= Todo.query.filter_by(id=todo_id).first()
+    if not todo_tobe_deleted:
+        return jsonify({"message":"no todo under that id!"})
+    
+    db.session.delete(todo_tobe_deleted)
+    db.session.commit()
+
+    return jsonify({"message":"todo deleted!"})
 
 
 
