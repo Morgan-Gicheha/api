@@ -69,7 +69,7 @@ def create_user(user_for_public_id):
 
 
     data= request.get_json()
-    print(data)
+    
 
     hashed_password = generate_password_hash(data['password'],method='sha256')
 
@@ -194,24 +194,49 @@ def login():
 @token_required
 def get_all_todo(user_for_public_id):
     """fetchng all todos"""
+    all_todo= Todo.query.all()
+    # creating empty list 
+    todo_list=[]
 
-    return ""
+    for todo in all_todo:
+        # creating empty dict and adding items to it
+        todo_dict={}
+        todo_dict["todo_id"]=todo.id
+        todo_dict["text"]=todo.text
+        todo_dict["is complete"]=todo.complete
+        todo_dict["user_id"]=todo.user_id
+        # appending items tp the empty list
+        todo_list.append(todo_dict)
+
+
+    return jsonify({"message":todo_list})
+
 @app.route('/todo/<todo_id>',methods=['GET'])
 @token_required
 def get_one_todo(user_for_public_id,todo_id):
     """getting one todo"""
+    one_todo= Todo.query.filter_by(id=todo_id).first()
 
-    return ""
+    one_todo_dict = {}
+    one_todo_dict["is complete"] = one_todo.complete
+    one_todo_dict["text"]= one_todo.text
+    one_todo_dict["user id"] = one_todo.text
+    
+
+    return jsonify({"response": one_todo_dict})
 
 
 @app.route('/create_todo',methods=['POST'])
 @token_required
 def create_todo(user_for_public_id):
     """CREATING A NEW TODO"""
-
-    x= request.get_json()
-    print(type(x))
-    return jsonify({"message":"working so far"})
+    data = request.get_json()
+    
+    new_data=Todo(text=data["text"],complete=False, user_id=user_for_public_id.id)
+    db.session.add(new_data)
+    db.session.commit()
+    
+    return jsonify({"message":data})
 
 
 @app.route('/todo/<todo_id>',methods=['PUT'])
