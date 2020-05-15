@@ -13,7 +13,7 @@ It is a requirement that you have Python3 installed in your computer.
 1.clone the project
 
 ```bash
-git clone https://github.com/codeGiche/Employee-management-system.git
+git https://github.com/codeGiche/api.git
 ```
 2.Create a virtual environment
 ```bash
