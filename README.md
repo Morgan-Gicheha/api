@@ -5,12 +5,29 @@ After login in, a token is provided fo the specific session an expireration is s
 Admins are able to delete and create a user
 
 
-## Installation
+## Installation 
 
-Use the package manager pip to install requirements.
+
+It is a requirement that you have Python3 installed in your computer.
+
+1.clone the project
 
 ```bash
-pip install -r requirements.txt
+git clone https://github.com/codeGiche/Employee-management-system.git
+```
+2.Create a virtual environment
+```bash
+python -m venv venv
+```
+3.Activate the virtual environment
+```bash
+Source venv/Scripts/activate
+```
+4. Use the package manager pip to install requirements.
+```bash
+pip install -r reqiurements.txt
+
+
 ```
 
 ## Usage
