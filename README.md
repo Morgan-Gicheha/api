@@ -33,5 +33,5 @@ pip install -r reqiurements.txt
 ## Usage
 
 ```python
-use postman to make request.
+use postman to make requests.
 ```
